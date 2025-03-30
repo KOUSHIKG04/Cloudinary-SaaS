@@ -8,7 +8,6 @@ import { Video } from "@/types";
 const Home = () => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const fetchVideos = useCallback(async () => {
     try {
@@ -18,7 +17,6 @@ const Home = () => {
       }
     } catch (error) {
       console.log(error);
-      setError(error instanceof Error ? error.message : String(error));
     } finally {
       setLoading(false);
     }

@@ -19,7 +19,13 @@ interface CloudinaryUploadResult {
   [Key: string]: any;
 }
 
-export async function POST(request: NextRequest) {
+interface UploadResponse {
+  success: boolean;
+  url?: string;
+  error?: string;
+}
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const { userId } = await auth();
     if (!userId) {

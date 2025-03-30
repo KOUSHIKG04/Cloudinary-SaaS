@@ -14,7 +14,13 @@ interface CloudinaryUploadResult {
   [Key: string]: any;
 }
 
-export async function POST(request: NextRequest) {
+interface UploadResponse {
+  success: boolean;
+  url?: string;
+  error?: string;
+}
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: " Unauthorized" }, { status: 401 });
@@ -47,11 +53,14 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    return NextResponse.json({ publicId: result.public_id }, { status: 200 });
+    return NextResponse.json({ success: true, url: result.secure_url });
   } catch (error) {
     console.log(error);
     return NextResponse.json(
-      { error: `${error} : Error uploading image` },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Upload failed",
+      },
       { status: 500 }
     );
   }
