@@ -1,119 +1,50 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { getCldImageUrl, getCldVideoUrl } from "next-cloudinary";
-import { FileDown, FileUp, Clock, ArrowRight } from "lucide-react";
-import dayjs from "dayjs";
-import realativeTime from "dayjs/plugin/relativeTime";
-import { filesize } from "filesize";
-import { Video } from "@prisma/client";
-import Link from "next/link";
-import { DownloadButton } from "./DownloadButton";
+"use client";
 
-dayjs.extend(realativeTime);
+import { getCldVideoUrl } from "next-cloudinary";
+import { FileDown, FileUp, Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Video } from "@/types";
+import Link from "next/link";
+import { filesize } from "filesize";
 
 interface VideoCardProps {
   video: Video;
 }
 
-const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [previewError, setPreviewError] = useState(false);
-
-  const getThumbnailUrl = useCallback((publicId: string) => {
-    return getCldImageUrl({
-      src: publicId,
-      width: 400,
-      height: 225,
-      crop: "fill",
-      format: "auto",
-      quality: "auto",
-      assetType: "video",
-    });
-  }, []);
-
-  const getFullVideoUrl = useCallback((publicId: string) => {
-    return getCldVideoUrl({
-      src: publicId,
-      width: 1928,
-      height: 1080,
-    });
-  }, []);
-
-  const getPreviewVideoUrl = useCallback((publicId: string) => {
-    return getCldVideoUrl({
-      src: publicId,
-      width: 400,
-      height: 225,
-      crop: "fill",
-      format: "auto",
-      quality: "auto",
-      assetType: "video",
-      rawTransformations: ["e_preview: duration_15: max_seg_9: min_seg_dur_1"],
-    });
-  }, []);
-
-  const formatSize = useCallback((size: number) => {
-    return filesize(size);
-  }, []);
-
-  const formatDuration = useCallback((seconds: number) => {
+export default function VideoCard({ video }: VideoCardProps) {
+  const formatDuration = (seconds: number) => {
     const min = Math.floor(seconds / 60);
-    const reamaingSeconds = Math.round(seconds % 60);
-    return `${min}:${reamaingSeconds.toString().padStart(2, "0")}`;
-  }, []);
-
-  useEffect(() => {
-    setPreviewError(false);
-  }, [isHovered]);
-
-  const handlePreviewError = () => {
-    setPreviewError(true);
+    const remainingSeconds = Math.round(seconds % 60);
+    return `${min}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   return (
     <Link href={`/video/${video.id}`} className="block">
-      <div
-        className="group relative bg-card rounded-2xl border shadow-sm hover:shadow-xl transition-all duration-300 hover:border-primary/20 hover:-translate-y-1"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
+      <div className="group relative bg-card rounded-2xl border shadow-sm hover:shadow-xl transition-all duration-300 hover:border-primary/20 hover:-translate-y-1">
         <figure className="relative aspect-video overflow-hidden rounded-t-2xl">
-          {isHovered ? (
-            previewError ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-muted/80 backdrop-blur-sm">
-                <p className="text-muted-foreground font-medium">
-                  PREVIEW UNAVAILABLE!
-                </p>
-              </div>
-            ) : (
-              <video
-                key={video.publicId}
-                src={getPreviewVideoUrl(video.publicId)}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                onError={handlePreviewError}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-            )
-          ) : (
-            <img
-              src={getThumbnailUrl(video.publicId)}
-              alt={video.title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          )}
+          <img
+            src={getCldVideoUrl({
+              src: video.publicId,
+              width: 1920,
+              height: 1080,
+              format: "jpg",
+            })}
+            alt={video.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm flex items-center gap-1.5 font-medium transform transition-transform duration-300 group-hover:translate-x-1">
-            <Clock className="w-3.5 h-3.5" />
+            <Play className="w-3.5 h-3.5" />
             {formatDuration(video.duration)}
           </div>
-          {/* <div className="absolute top-3 left-3 bg-black/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm flex items-center gap-1.5 font-medium transform transition-transform duration-300 group-hover:translate-x-1">
+          <div className="absolute top-3 left-3 bg-green-500/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm flex items-center gap-1.5 font-medium transform transition-transform duration-300 group-hover:translate-x-1">
             <span className="text-green-400">●</span>
-            {compressionPercentage}% Smaller
-          </div> */}
+            {Math.round(
+              (1 - Number(video.compressedSize) / Number(video.originalSize)) *
+                100
+            )}
+            % Smaller
+          </div>
         </figure>
 
         <div className="p-6 space-y-6">
@@ -127,15 +58,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
                   {video.description}
                 </p>
               </div>
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary transform transition-transform duration-300 group-hover:translate-x-1">
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </div>
             </div>
-            <p className="text-xs text-muted-foreground/80">
-              Uploaded {dayjs(video.createdAt).fromNow()}
-            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -145,7 +68,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
                 <span>Original Size</span>
               </div>
               <p className="font-medium text-lg">
-                {formatSize(Number(video.originalSize))}
+                {filesize(Number(video.originalSize))}
               </p>
             </div>
             <div className="p-4 rounded-xl bg-muted/50 space-y-2 transform transition-all duration-300 group-hover:bg-muted/70">
@@ -154,7 +77,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
                 <span>Compressed Size</span>
               </div>
               <p className="font-medium text-lg text-primary">
-                {formatSize(Number(video.compressedSize))}
+                {filesize(Number(video.compressedSize))}
               </p>
             </div>
           </div>
@@ -163,20 +86,31 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Saved:</span>
               <span className="font-medium text-green-500">
-                {formatSize(
+                {filesize(
                   Number(video.originalSize) - Number(video.compressedSize)
                 )}
               </span>
             </div>
-            <DownloadButton
-              url={getFullVideoUrl(video.publicId)}
-              title={video.title}
-            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                window.open(
+                  getCldVideoUrl({
+                    src: video.publicId,
+                    width: 1920,
+                    height: 1080,
+                  }),
+                  "_blank"
+                );
+              }}
+            >
+              Download
+            </Button>
           </div>
         </div>
       </div>
     </Link>
   );
-};
-
-export default VideoCard;
+}

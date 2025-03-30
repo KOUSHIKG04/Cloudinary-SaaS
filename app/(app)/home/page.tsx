@@ -26,16 +26,6 @@ const Home = () => {
     fetchVideos();
   }, [fetchVideos]);
 
-  const handleDownload = useCallback((url: string, title: string) => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `${title}.mp4`);
-    link.setAttribute("target", "_blank");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }, []);
-
   if (loading) {
     return (
       <div className=" gap-4 w-full flex items-center justify-center mt-8 h-[400px] ">
@@ -60,11 +50,7 @@ const Home = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {videos.map((video) => (
-            <VideoCard
-              key={video.id}
-              video={video}
-              onDownload={handleDownload}
-            />
+            <VideoCard key={video.id} video={video} />
           ))}
         </div>
       )}
