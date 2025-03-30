@@ -16,13 +16,9 @@ interface CloudinaryUploadResult {
   public_id: string;
   bytes: number;
   duration?: number;
-  [Key: string]: any;
-}
-
-interface UploadResponse {
-  success: boolean;
-  url?: string;
-  error?: string;
+  format: string;
+  resource_type: string;
+  secure_url: string;
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {

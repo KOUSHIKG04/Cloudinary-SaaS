@@ -61,10 +61,6 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
     return `${min}:${reamaingSeconds.toString().padStart(2, "0")}`;
   }, []);
 
-  const compressionPercentage = Math.round(
-    1 - (Number(video.compressedSize) / Number(video.originalSize)) * 100
-  );
-
   useEffect(() => {
     setPreviewError(false);
   }, [isHovered]);

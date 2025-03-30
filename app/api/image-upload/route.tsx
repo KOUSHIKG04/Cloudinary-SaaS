@@ -11,13 +11,10 @@ cloudinary.config({
 
 interface CloudinaryUploadResult {
   public_id: string;
-  [Key: string]: any;
-}
-
-interface UploadResponse {
-  success: boolean;
-  url?: string;
-  error?: string;
+  secure_url: string;
+  bytes: number;
+  format: string;
+  resource_type: string;
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
