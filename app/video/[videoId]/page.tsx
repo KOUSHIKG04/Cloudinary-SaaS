@@ -7,14 +7,11 @@ import { VideoDownloadButton } from "@/components/VideoDownloadButton";
 
 const prisma = new PrismaClient();
 
-type Props = {
-  params: {
-    videoId: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
-
-export default async function VideoPage({ params }: Props) {
+export default async function VideoPage({
+  params,
+}: {
+  params: { videoId: string };
+}) {
   const video = await prisma.video.findUnique({
     where: { id: params.videoId },
   });
